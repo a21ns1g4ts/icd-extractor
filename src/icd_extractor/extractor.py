@@ -21,8 +21,10 @@ References:
 """
 
 import argparse
+import json
 import logging
 import sys
+from pathlib import Path
 
 from icd_extractor import __version__
 
@@ -49,7 +51,30 @@ def extract(file):
     Returns:
       str: file path output
     """
-    return file
+    path_import = file
+
+    with open(path_import, 'r') as _f:
+        raw = _f.read()
+        _f.close()
+
+    # convert raw txt to json
+    data = []
+    for rcd in raw.split('\n'):
+        if rcd:
+            data.append({
+                'code': rcd[:8].strip(),
+                'desc': rcd[9:],
+            })
+
+    # export converted json
+    file_name = file.split('/')[-1].split('.')[0] + '.json'
+    path_export = Path().absolute().__str__() + '/storage/' + file_name
+
+    with open(path_export, 'w') as _f:
+        json.dump(data, _f)
+        _f.close()
+
+    return path_export
 
 
 # ---- CLI ----
@@ -115,9 +140,16 @@ def main(args):
     """
     args = parse_args(args)
     setup_logging(args.loglevel)
+
     _logger.debug("Starting ICD extract...")
-    print("FILE_PATH: {}".format(args.n))
-    _logger.info("Success!")
+
+    try:
+        extract(args.n)
+    except Exception as e:
+        logging.exception(e)
+    finally:
+        print("FILE_PATH: {}".format(args.n))
+        _logger.info("Success!")
 
 
 def run():
@@ -137,6 +169,6 @@ if __name__ == "__main__":
     # After installing your project with pip, users can also run your Python
     # modules as scripts via the ``-m`` flag, as defined in PEP 338::
     #
-    #     python -m icd_extractor.extractor 42
+    #     python -m icd_extractor.extractor /home/danvizera/Projects/danvi/icd-extractor/tests/icd10cm_codes_test.txt
     #
     run()
