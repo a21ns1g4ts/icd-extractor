@@ -1,6 +1,6 @@
 import pytest
 
-from icd_extractor.skeleton import fib, main
+from icd_extractor.extractor import extract, main
 
 __author__ = "Atiladanvi"
 __copyright__ = "Atiladanvi"
@@ -9,17 +9,13 @@ __license__ = "MIT"
 
 def test_fib():
     """API Tests"""
-    assert fib(1) == 1
-    assert fib(2) == 1
-    assert fib(7) == 13
-    with pytest.raises(AssertionError):
-        fib(-10)
+    assert extract(1) == 1
 
 
 def test_main(capsys):
     """CLI Tests"""
     # capsys is a pytest fixture that allows asserts agains stdout/stderr
     # https://docs.pytest.org/en/stable/capture.html
-    main(["7"])
+    main(["./icd10cm_codes_2018.txt"])
     captured = capsys.readouterr()
-    assert "The 7-th Fibonacci number is 13" in captured.out
+    assert "FILE_PATH: ./icd10cm_codes_2018.txt" in captured.out
